@@ -26,6 +26,8 @@ from odoo.tools.safe_eval import safe_eval
 from odoo.modules import load_information_from_description_file
 from odoo.exceptions import MissingError
 
+from .ExtraFunctions import ExtraFunctions
+
 
 _logger = logging.getLogger(__name__)
 
@@ -185,6 +187,10 @@ class ReportAerooAbstract(models.AbstractModel):
             }
         self.set_lang(self.company.partner_id.lang)
         self._set_objects(self.model, ids)
+
+        # extra functions
+        xfunc = ExtraFunctions(self.env.cr, self.env.uid, report.id, self.localcontext)
+        self.localcontext.update(xfunc.functions)
         
         file_data = None
         if report.tml_source == 'database':
