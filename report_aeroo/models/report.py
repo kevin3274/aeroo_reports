@@ -253,8 +253,8 @@ class report_aeroo(models.Model):
                 parser=self.load_from_file(vals['parser_loc'], vals['name'].lower().replace(' ','_')) or parser
             elif vals['parser_state']=='def' and vals['parser_def']:
                 parser=self.load_from_source(vals['parser_def']) or parser
-            model = self.env['ir.model']._get(vals.get('model'))
-            vals['binding_model_id'] = model.id
+            # model = self.env['ir.model']._get(vals.get('model'))
+            # vals['binding_model_id'] = model.id
             res_id = super(report_aeroo, self).create(vals)
             if vals.get('report_wizard'):
                 wizard_id = self._set_report_wizard(self.env.cr, self.env.uid, vals['replace_report_id'] or res_id, \

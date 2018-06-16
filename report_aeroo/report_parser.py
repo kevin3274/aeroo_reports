@@ -264,16 +264,12 @@ class ReportAerooAbstract(models.AbstractModel):
     
     def assemble_tasks(self, ids, data, report, ctx):
         code = report.out_format.code
-        localcontext = {
-                        'data':data,
-                        'time':time,
-                        #TODO Add more variables
-                       }
-        
         result = self.single_report(ids, data, report, ctx)
         if report.in_format == code:
             if report.content_fname:
-                fname = safe_eval(report.content_fname, localcontext)
+                fname = safe_eval(report.content_fname, self.localcontext)
+                if fname[-3:] != mime_dict[report.in_format]:
+                    fname = '%s.%s' % (fname, mime_dict[report.in_format])
             else:
                 fname = 'report.%s' % mime_dict[report.in_format]
             return result[0], result[1], fname
@@ -282,7 +278,9 @@ class ReportAerooAbstract(models.AbstractModel):
                 self.get_docs_conn()
                 result = self._generate_doc(result[0], report)
                 if report.content_fname:
-                    fname = safe_eval(report.content_fname, localcontext)
+                    fname = safe_eval(report.content_fname, self.localcontext)
+                    if fname[-3:] != mime_dict[report.in_format]:
+                        fname = '%s.%s' % (fname, mime_dict[report.in_format])
                 else:
                     fname = 'report.%s' % mime_dict[report.out_format.code]
                 return result, mime_dict[code], fname
