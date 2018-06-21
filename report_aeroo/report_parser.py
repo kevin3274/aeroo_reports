@@ -269,7 +269,7 @@ class ReportAerooAbstract(models.AbstractModel):
             if report.content_fname:
                 fname = safe_eval(report.content_fname, self.localcontext)
                 if fname[-3:] != mime_dict[report.in_format]:
-                    fname = '%s.%s' % (fname, mime_dict[report.in_format])
+                    fname = '%s.%s' % (fname, mime_dict[report.out_format.code])
             else:
                 fname = 'report.%s' % mime_dict[report.in_format]
             return result[0], result[1], fname
@@ -280,7 +280,7 @@ class ReportAerooAbstract(models.AbstractModel):
                 if report.content_fname:
                     fname = safe_eval(report.content_fname, self.localcontext)
                     if fname[-3:] != mime_dict[report.in_format]:
-                        fname = '%s.%s' % (fname, mime_dict[report.in_format])
+                        fname = '%s.%s' % (fname, mime_dict[report.out_format.code])
                 else:
                     fname = 'report.%s' % mime_dict[report.out_format.code]
                 return result, mime_dict[code], fname
