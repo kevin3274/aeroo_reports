@@ -12,7 +12,7 @@ var crash_manager = require('web.crash_manager');
 var framework = require('web.framework');
 
 ActionManager.include({
-    ir_actions_report: function (action, options){
+  _executeReportAction: function (action, options){
         var self = this;
         var c_action = _.clone(action);
         if (c_action.report_type !== 'aeroo') {
@@ -27,21 +27,26 @@ ActionManager.include({
             aeroo_url += '?options=' + encodeURIComponent(JSON.stringify(c_action.data));
             aeroo_url += '&context=' + encodeURIComponent(JSON.stringify(c_action.context));
         }
-        self.getSession().get_file({
+        return $.Deferred(function(deferred) {
+          self.getSession().get_file({
             url: aeroo_url,
             data: {data: JSON.stringify([
                 aeroo_url,
                 c_action.report_type
             ])},
-            error: crash_manager.rpc_error.bind(crash_manager),
+            complete: framework.unblockUI,
             success: function (){
                 if(c_action && options && !c_action.dialog){
                     options.on_close();
+                    deferred.resove()
                 }
-            }
+            },
+            error(){
+                crash_manager.rpc_error.apply(crash_manager, arguments);
+                deferred.reject();
+            },
         });
-        framework.unblockUI();
-        return;
+      });
     }
 });
 });
