@@ -38,7 +38,7 @@ ActionManager.include({
             success: function (){
                 if(c_action && options && !c_action.dialog){
                     options.on_close();
-                    deferred.resove()
+                    deferred.resolve()
                 }
             },
             error(){
