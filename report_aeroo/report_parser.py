@@ -80,7 +80,7 @@ class ReportAerooAbstract(models.AbstractModel):
     def get_docs_conn(self):
         if self.docs_client:
             return
-        icp = self.env.get('ir.config_parameter')
+        icp = self.env.get('ir.config_parameter').sudo()
         icpgp = icp.get_param
         docs_host = icpgp('aeroo.docs_host') or 'localhost'
         docs_port = icpgp('aeroo.docs_port') or '8989'
