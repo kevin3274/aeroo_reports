@@ -126,6 +126,11 @@ class report_aeroo(models.Model):
     def _get_default_outformat(self):
         res = self.env['report.mimetypes'].search([('code','=','oo-odt')])
         return res and res[0].id or False
+
+    @api.model
+    def _get_default_informat(self):
+        res = self.env['report.mimetypes'].search([('code','=','oo-odt')])
+        return res and res[0].code or False
     
     @api.multi
     def _get_extras(recs):
@@ -200,7 +205,7 @@ class report_aeroo(models.Model):
         help='Generate the report for each object separately, \
               then merge reports.')
     in_format = fields.Selection(selection='_get_in_mimetypes',
-        string='Template Mime-type', default='oo-odt')
+        string='Template Mime-type', default=_get_default_informat)
     out_format = fields.Many2one('report.mimetypes', 'Output Mime-type',
         default=_get_default_outformat)
     active = fields.Boolean('Active', help='Disables the report if unchecked.',
