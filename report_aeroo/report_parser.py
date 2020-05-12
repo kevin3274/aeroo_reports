@@ -189,7 +189,7 @@ class ReportAerooAbstract(models.AbstractModel):
         self._set_objects(self.model, ids)
 
         # extra functions
-        xfunc = ExtraFunctions(self.env.cr, self.env.uid, report.id, self.localcontext)
+        xfunc = ExtraFunctions(self.env, report.id, self.localcontext)
         self.localcontext.update(xfunc.functions)
         
         file_data = None

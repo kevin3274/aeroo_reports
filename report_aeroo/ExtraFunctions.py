@@ -41,7 +41,7 @@ from PIL import Image
 import time
 # import osv
 # from report import report_sxw
-from odoo import _
+from odoo import models, _
 # import netsvc
 from odoo.tools.safe_eval import safe_eval as eval
 from aeroolib.plugins.opendocument import _filter
@@ -101,10 +101,8 @@ class ExtraFunctions(object):
     """ This class contains some extra functions which
         can be called from the report's template.
     """
-    def __init__(self, cr, uid, report_id, context):
-        self.cr = cr
-        self.uid = uid
-        # self.pool = pooler.get_pool(self.cr.dbname)
+    def __init__(self, env, report_id, context):
+        self.env = env
         self.report_id = report_id
         self.context = context
         self.functions = {
@@ -215,8 +213,8 @@ class ExtraFunctions(object):
 
     def _currency2text(self, currency):
         def c_to_text(sum, currency=currency, language=None):
-            #return unicode(currency_to_text(sum, currency, language or self._get_lang()), "UTF-8")
-            return unicode(supported_language.get(language or self._get_lang()).currency_to_text(sum, currency), "UTF-8")
+            #return (currency_to_text(sum, currency, language or self._get_lang()), "UTF-8")
+            return str(supported_language.get(language or self._get_lang()).currency_to_text(sum, currency), "UTF-8")
         return c_to_text
 
     def _translate_text(self, source):
@@ -300,11 +298,11 @@ class ExtraFunctions(object):
         try:
             if isinstance(obj, report_sxw.browse_record_list):
                 obj = obj[0]
-            if isinstance(obj, (str,unicode)):
+            if isinstance(obj, (str,)):
                 model = obj
             else:
                 model = obj._table_name
-            if isinstance(obj, (str,unicode)) or hasattr(obj, field):
+            if isinstance(obj, (str,)) or hasattr(obj, field):
                 labels = self.pool.get(model).fields_get(self.cr, self.uid, allfields=[field], context=self.context)
                 return labels[field]['string']
         except Exception as e:
@@ -314,11 +312,11 @@ class ExtraFunctions(object):
         try:
             if isinstance(obj, report_sxw.browse_record_list):
                 obj = obj[0]
-            if isinstance(obj, (str,unicode)):
+            if isinstance(obj, (str,)):
                 model = obj
             else:
                 model = obj._table_name
-            if isinstance(obj, (str,unicode)) or hasattr(obj, field):
+            if isinstance(obj, (str,)) or hasattr(obj, field):
                 size = self.pool.get(model)._columns[field].size
                 return size
         except Exception as e:
@@ -328,11 +326,11 @@ class ExtraFunctions(object):
         try:
             if isinstance(obj, report_sxw.browse_record_list):
                 obj = obj[0]
-            if isinstance(obj, (str,unicode)):
+            if isinstance(obj, (str,)):
                 model = obj
             else:
                 model = obj._table_name
-            if isinstance(obj, (str,unicode)) or hasattr(obj, field):
+            if isinstance(obj, (str,)) or hasattr(obj, field):
                 digits = self.pool.get(model)._columns[field].digits
                 return digits or [16,2]
         except Exception:
@@ -341,21 +339,23 @@ class ExtraFunctions(object):
     def _get_selection_items(self, kind='items'):
         def get_selection_item(obj, field, value=None):
             try:
-                if isinstance(obj, report_sxw.browse_record_list):
-                    obj = obj[0]
-                if isinstance(obj, (str,unicode)):
+                if isinstance(obj, models.Model):
+                    if len(obj) > 1:
+                        obj = obj[0]
+                if isinstance(obj, (str,)):
                     model = obj
                     field_val = value
                 else:
-                    model = obj._table_name
+                    model = obj._name
                     field_val = getattr(obj, field)
                 if kind=='item':
                     if field_val:
-                        return dict(self.pool.get(model).fields_get(self.cr, self.uid, allfields=[field], context=self.context)[field]['selection'])[field_val]
+                        return dict(self.env[model].fields_get(allfields=[field])[field]['selection'])[field_val]
                 elif kind=='items':
-                    return self.pool.get(model).fields_get(self.cr, self.uid, allfields=[field], context=self.context)[field]['selection']
+                    return self.env[model].fields_get(allfields=[field])[field]['selection']
                 return ''
-            except Exception:
+            except Exception as e:
+                print(e)
                 return ''
         return get_selection_item
 
@@ -563,7 +563,7 @@ class ExtraFunctions(object):
         return result
 
     def _text_restruct(self, text):
-        output = html_parts(unicode(text), doctitle=False)
+        output = html_parts(str(text), doctitle=False)
         return output['body']
 
     def _text_markdown(self, text):
